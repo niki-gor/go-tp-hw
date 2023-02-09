@@ -6,9 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"go_tp/hw_1/common"
-	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -55,7 +56,6 @@ func (c *Config) Validate() error {
 	if b2i(c.CountEntries)+b2i(c.OnlyRepeated)+b2i(c.OnlyUnique) > 1 {
 		return ErrIncompatibleFlags
 	}
-	log.Println(c.CountEntries, c.OnlyRepeated, c.OnlyUnique, c.IgnoreFields, c.IgnoreChars, c.IgnoreCase, c.InputPath, c.OutputPath)
 
 	if c.InputPath != "" {
 		f, err := os.Open(c.InputPath)
@@ -81,7 +81,6 @@ type UniqStrategy struct {
 	AreEqual  func(string, string) bool
 	CountIsOk func(int) bool
 	Println   func(int, string)
-	Teardown  func()
 }
 
 func (us *UniqStrategy) Execute() {
@@ -126,10 +125,10 @@ func AreEqual(s1, s2 string, ignoreFields, ignoreChars int) bool {
 	first := Drop(strings.Fields(s1), ignoreFields)
 	second := Drop(strings.Fields(s2), ignoreFields)
 
-	joinDropAndCast := func(words []string) string {
-		return string(Drop([]rune(strings.Join(words, " ")), ignoreChars))
+	dropRunes := func(words []string) []rune {
+		return Drop([]rune(strings.Join(words, " ")), ignoreChars)
 	}
-	return strings.Compare(joinDropAndCast(first), joinDropAndCast(second)) == 0
+	return slices.Equal(dropRunes(first), dropRunes(second))
 }
 
 func NewUniqStrategy(c Config) *UniqStrategy {

@@ -34,7 +34,7 @@ func Eval(s string) (string, error) {
 	return result.Value.String(), err
 }
 
-func ChooseInput() (func() (string, error), error) {
+func SelectInput() (func() (string, error), error) {
 	fi, err := os.Stdin.Stat()
 	common.Exit1OnError(err)
 	stdinUsed := fi.Mode()&os.ModeNamedPipe != 0
@@ -52,11 +52,11 @@ func ChooseInput() (func() (string, error), error) {
 }
 
 func main() {
-	inputFunc, err := ChooseInput()
+	input, err := SelectInput()
 	common.Exit1OnError(err)
-	input, err := inputFunc()
+	s, err := input()
 	common.Exit1OnError(err)
-	result, err := Eval(input)
+	result, err := Eval(s)
 	common.Exit1OnError(err)
 	fmt.Print(result)
 }

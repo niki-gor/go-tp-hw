@@ -16,30 +16,25 @@ var (
 	ErrMultipleInputSources = errors.New("Both args and stdin are used - you can choose only one option")
 )
 
-func ArgsString() string {
-	return strings.Join(os.Args[1:], " ")
+func ArgsString() (string, error) {
+	return strings.Join(os.Args[1:], " "), nil
 }
 
-func ReadAllStdin() string {
+func ReadAllStdin() (string, error) {
 	result, err := io.ReadAll(os.Stdin)
-	common.Exit1OnError(err)
-	return string(result)
+	return string(result), err
 }
 
-func ReadLineStdin() string {
-	reader := bufio.NewReader(os.Stdin)
-	result, err := reader.ReadString('\n')
-	common.Exit1OnError(err)
-	return result
+func ReadLineStdin() (string, error) {
+	return bufio.NewReader(os.Stdin).ReadString('\n')
 }
 
-func Eval(s string) string {
+func Eval(s string) (string, error) {
 	result, err := types.Eval(token.NewFileSet(), nil, token.NoPos, s)
-	common.Exit1OnError(err)
-	return result.Value.String()
+	return result.Value.String(), err
 }
 
-func ChooseInput() (result func() string) {
+func ChooseInput() (func() (string, error), error) {
 	fi, err := os.Stdin.Stat()
 	common.Exit1OnError(err)
 	stdinUsed := fi.Mode()&os.ModeNamedPipe != 0
@@ -47,18 +42,21 @@ func ChooseInput() (result func() string) {
 
 	switch {
 	case stdinUsed && argsUsed:
-		common.Exit1OnError(ErrMultipleInputSources)
+		return nil, ErrMultipleInputSources
 	case stdinUsed:
-		result = ReadAllStdin
+		return ReadAllStdin, nil
 	case argsUsed:
-		result = ArgsString
-	default:
-		result = ReadLineStdin
+		return ArgsString, nil
 	}
-	return result
+	return ReadAllStdin, nil
 }
 
 func main() {
-	inputFunc := ChooseInput()
-	fmt.Print(Eval(inputFunc()))
+	inputFunc, err := ChooseInput()
+	common.Exit1OnError(err)
+	input, err := inputFunc()
+	common.Exit1OnError(err)
+	result, err := Eval(input)
+	common.Exit1OnError(err)
+	fmt.Print(result)
 }

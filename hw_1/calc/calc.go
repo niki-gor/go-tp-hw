@@ -14,6 +14,7 @@ import (
 
 var (
 	ErrMultipleInputSources = errors.New("Both args and stdin are used - you can choose only one option")
+	ErrInvalidQuery         = errors.New("Invalid query")
 )
 
 func ArgsString() (string, error) {
@@ -29,9 +30,15 @@ func ReadLineStdin() (string, error) {
 	return bufio.NewReader(os.Stdin).ReadString('\n')
 }
 
-func Eval(s string) (string, error) {
-	result, err := types.Eval(token.NewFileSet(), nil, token.NoPos, s)
-	return result.Value.String(), err
+func Eval(s string) (result string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			result, err = "NaN", ErrInvalidQuery
+		}
+	}()
+	calculation, err := types.Eval(token.NewFileSet(), nil, token.NoPos, s)
+	result = calculation.Value.String()
+	return
 }
 
 func SelectInput() (func() (string, error), error) {

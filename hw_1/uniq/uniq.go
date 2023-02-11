@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"go_tp/hw_1/common"
+	"io"
 	"os"
 	"strings"
 
@@ -77,17 +78,17 @@ func (c *Config) Validate() error {
 }
 
 type UniqStrategy struct {
-	InputFile *os.File
+	Reader    io.Reader
 	AreEqual  func(string, string) bool
 	CountIsOk func(int) bool
-	Println   func(int, string)
+	Format    func(int, string) string
+	Writer    io.Writer
 }
 
 func (us *UniqStrategy) Execute() {
 	prev, latest := "", ""
 	count := 0
-	scanner := bufio.NewScanner(us.InputFile)
-	defer us.InputFile.Close()
+	scanner := bufio.NewScanner(us.Reader)
 
 	if scanner.Scan() {
 		prev = scanner.Text()
@@ -100,13 +101,13 @@ func (us *UniqStrategy) Execute() {
 			continue
 		}
 		if us.CountIsOk(count) {
-			us.Println(count, prev)
+			fmt.Fprintln(us.Writer, us.Format(count, prev))
 		}
 		prev = latest
 		count = 1
 	}
 	if us.CountIsOk(count) {
-		us.Println(count, prev)
+		fmt.Fprintln(us.Writer, us.Format(count, prev))
 	}
 }
 
@@ -135,9 +136,9 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 	us := &UniqStrategy{}
 
 	if c.InputPath != "" {
-		us.InputFile, _ = os.Open(c.InputPath)
+		us.Reader, _ = os.Open(c.InputPath)
 	} else {
-		us.InputFile = os.Stdin
+		us.Reader = os.Stdin
 	}
 
 	if c.IgnoreCase {
@@ -165,19 +166,18 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 		}
 	}
 
-	var outputFile *os.File
 	if c.OutputPath != "" {
-		outputFile, _ = os.Create(c.OutputPath)
+		us.Writer, _ = os.Create(c.OutputPath)
 	} else {
-		outputFile = os.Stdout
+		us.Writer = os.Stdout
 	}
 	if c.CountEntries {
-		us.Println = func(count int, line string) {
-			fmt.Fprintf(outputFile, "%d %s\n", count, line)
+		us.Format = func(count int, line string) string {
+			return fmt.Sprintf("%d %s", count, line)
 		}
 	} else {
-		us.Println = func(count int, line string) {
-			fmt.Fprintln(outputFile, line)
+		us.Format = func(count int, line string) string {
+			return fmt.Sprint(line)
 		}
 	}
 

@@ -124,3 +124,31 @@ Thanks.`,
 		}
 	}
 }
+
+func TestCombined(t *testing.T) {
+	c := Config{}
+	c.IgnoreFields = 1
+	c.IgnoreChars = 1
+	tc := TestCase{
+		Q: `We love music.
+I move music.
+They dove music.
+
+I love music of Kartik.
+We move music of Kartik.
+Thanks.`,
+		A: `We love music.
+
+I love music of Kartik.
+Thanks.`,
+		C: c,
+	}
+	us := NewUniqStrategy(tc.C)
+	us.Reader = strings.NewReader(tc.Q)
+	result := bytes.Buffer{}
+	us.Writer = &result
+	us.Execute()
+	if result.String() != tc.A+"\n" {
+		t.Errorf("query: %s\nresult:\n%s\nexpected:\n%s", tc.Q, result.String(), tc.A+"\n")
+	}
+}

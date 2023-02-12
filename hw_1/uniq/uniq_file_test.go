@@ -1,8 +1,8 @@
 package main
 
 import (
+	"io"
 	"os"
-	"os/exec"
 	"testing"
 )
 
@@ -17,10 +17,11 @@ func TestFiles(t *testing.T) {
 
 		tc.C.InputPath = input.Name()
 		tc.C.OutputPath = output.Name()
-		uniq := exec.Command("/usr/bin/go", append([]string{"run", "uniq.go"}, toCli(tc.C)...)...)
-		uniq.Run()
 
-		result, err := os.ReadFile(output.Name())
+		us := NewUniqStrategy(tc.C)
+		us.Execute()
+
+		result, err := io.ReadAll(output)
 		if err != nil {
 			t.Fatal()
 		}

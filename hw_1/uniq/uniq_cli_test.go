@@ -33,9 +33,13 @@ func toCli(c Config) []string {
 }
 
 func TestCli(t *testing.T) {
+	// я посмотрел пункт ТЗ про независимость от внешних ресурсов уже после имплементации этого теста
+	t.Skip() // в любом случае, мне было интересно поработать c exec и pipe :)
+
 	for _, tc := range allTestCases {
+		// тест *работает* на *nix с установленным компилятором go
 		echo := exec.Command("echo", tc.Q)
-		uniq := exec.Command("/usr/bin/go", append([]string{"run", "uniq.go"}, toCli(tc.C)...)...)
+		uniq := exec.Command("go", append([]string{"run", "uniq.go"}, toCli(tc.C)...)...)
 
 		uniq.Stdin, _ = echo.StdoutPipe()
 		result := bytes.Buffer{}

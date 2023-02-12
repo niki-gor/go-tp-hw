@@ -12,7 +12,7 @@ type TestCase struct {
 	C Config
 }
 
-func TestBasic(t *testing.T) {
+func basicTestCases() []TestCase {
 	defaultQ := `I love music.
 I love music.
 I love music.
@@ -41,7 +41,8 @@ I love music of Kartik.`
 
 I love music of Kartik.
 Thanks.
-I love music of Kartik.`,
+I love music of Kartik.
+`,
 			C: Config{},
 		},
 		{
@@ -50,20 +51,23 @@ I love music of Kartik.`,
 1 
 2 I love music of Kartik.
 1 Thanks.
-2 I love music of Kartik.`,
+2 I love music of Kartik.
+`,
 			C: countEntriesC,
 		},
 		{
 			Q: defaultQ,
 			A: `I love music.
 I love music of Kartik.
-I love music of Kartik.`,
+I love music of Kartik.
+`,
 			C: onlyRepeatedC,
 		},
 		{
 			Q: defaultQ,
 			A: `
-Thanks.`,
+Thanks.
+`,
 			C: onlyUniqueC,
 		},
 		{
@@ -80,7 +84,8 @@ I love MuSIC of Kartik.`,
 
 I love MuSIC of Kartik.
 Thanks.
-I love music of kartik.`,
+I love music of kartik.
+`,
 			C: ignoreCaseC,
 		},
 		{
@@ -94,7 +99,8 @@ Thanks.`,
 			A: `We love music.
 
 I love music of Kartik.
-Thanks.`,
+Thanks.
+`,
 			C: ignoreOneField,
 		},
 		{
@@ -109,26 +115,18 @@ Thanks.`,
 
 I love music of Kartik.
 We love music of Kartik.
-Thanks.`,
+Thanks.
+`,
 			C: ignoreOneChar,
 		},
 	}
-	for i, tc := range testCases {
-		us := NewUniqStrategy(tc.C)
-		us.Reader = strings.NewReader(tc.Q)
-		result := bytes.Buffer{}
-		us.Writer = &result
-		us.Execute()
-		if result.String() != tc.A+"\n" {
-			t.Errorf("testcase %d\nquery: %s\nresult:\n%s\nexpected:\n%s", i+1, tc.Q, result.String(), tc.A+"\n")
-		}
-	}
+	return testCases
 }
 
-func TestCombined(t *testing.T) {
+func combinedTestCase() TestCase {
 	c := Config{}
-	c.IgnoreFields = 1
-	c.IgnoreChars = 1
+	c.IgnoreFields = 1 // не учитывается первое поле
+	c.IgnoreChars = 1  // и первый символ 2-го поля
 	tc := TestCase{
 		Q: `We love music.
 I move music.
@@ -140,15 +138,24 @@ Thanks.`,
 		A: `We love music.
 
 I love music of Kartik.
-Thanks.`,
+Thanks.
+`,
 		C: c,
 	}
-	us := NewUniqStrategy(tc.C)
-	us.Reader = strings.NewReader(tc.Q)
-	result := bytes.Buffer{}
-	us.Writer = &result
-	us.Execute()
-	if result.String() != tc.A+"\n" {
-		t.Errorf("query: %s\nresult:\n%s\nexpected:\n%s", tc.Q, result.String(), tc.A+"\n")
+	return tc
+}
+
+var allTestCases = append(basicTestCases(), combinedTestCase())
+
+func TestLogic(t *testing.T) {
+	for i, tc := range allTestCases {
+		us := NewUniqStrategy(tc.C)
+		us.Reader = strings.NewReader(tc.Q)
+		result := bytes.Buffer{}
+		us.Writer = &result
+		us.Execute()
+		if result.String() != tc.A {
+			t.Errorf("testcase %d\nquery: %s\nresult:\n%s\nexpected:\n%s", i+1, tc.Q, result.String(), tc.A)
+		}
 	}
 }

@@ -166,11 +166,6 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 		}
 	}
 
-	if c.OutputPath != "" {
-		us.Writer, _ = os.Create(c.OutputPath)
-	} else {
-		us.Writer = os.Stdout
-	}
 	if c.CountEntries {
 		us.Format = func(count int, line string) string {
 			return fmt.Sprintf("%d %s", count, line)
@@ -179,6 +174,12 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 		us.Format = func(count int, line string) string {
 			return fmt.Sprint(line)
 		}
+	}
+
+	if c.OutputPath != "" {
+		us.Writer, _ = os.Create(c.OutputPath)
+	} else {
+		us.Writer = os.Stdout
 	}
 
 	return us

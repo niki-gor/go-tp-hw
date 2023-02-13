@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ErrMultipleInputSources = errors.New("Both args and stdin are used - you can choose only one option")
-	ErrInvalidQuery         = errors.New("Invalid query")
+	ErrMultipleInputSources = errors.New("both args and stdin are used - you can choose only one option")
+	ErrInvalidQuery         = errors.New("invalid query")
 )
 
 func ArgsString() (string, error) {

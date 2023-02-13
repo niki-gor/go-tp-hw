@@ -45,9 +45,9 @@ func TestCli(t *testing.T) {
 		result := bytes.Buffer{}
 		uniq.Stdout = &result
 
-		uniq.Start()
-		echo.Run()
-		uniq.Wait()
+		uniq.Start() // nolint
+		echo.Run()   // nolint
+		uniq.Wait()  // nolint
 
 		if result.String() != tc.A {
 			t.Errorf("result: %s\nexpected: %s\n", result.String(), tc.A)

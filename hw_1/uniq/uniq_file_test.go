@@ -13,7 +13,7 @@ func TestFiles(t *testing.T) {
 		defer os.Remove(input.Name())
 		defer os.Remove(output.Name())
 
-		input.WriteString(tc.Q)
+		input.WriteString(tc.Q) // nolint
 
 		tc.C.InputPath = input.Name()
 		tc.C.OutputPath = output.Name()

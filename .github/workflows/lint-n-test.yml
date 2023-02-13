@@ -1,0 +1,39 @@
+name: Lint'n'test
+
+on: pull_request
+
+jobs:
+  check-dependencies:
+    runs-on: golang:alpine3.17
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Verify dependencies
+        run: go mod verify
+  
+  lint:
+    needs: check-dependencies
+    runs-on: golang:alpine3.17
+    steps:
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck
+        run: staticcheck ./...
+      
+      - name: Install golint
+        run: go install golang.org/x/lint/golint@latest
+
+      - name: Run golint
+        run: golint ./...
+  
+  test:
+    needs: check-dependencies
+    runs-on: golang:alpine3.17
+    steps:
+      - name: Run tests
+        run: go test -race -vet=off ./...

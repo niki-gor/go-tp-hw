@@ -7,11 +7,6 @@ import (
 	"sync"
 )
 
-var userIDs = &sync.Map{}
-
-var mtx = &sync.Mutex{}
-var batch = []User{}
-
 func onErrorExit1(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -20,13 +15,13 @@ func onErrorExit1(err error) {
 }
 
 func RunPipeline(cmds ...cmd) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+
 	chans := make([]chan any, 1+len(cmds))
 	for i := range chans {
 		chans[i] = make(chan any)
 	}
-
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
 
 	for i, f := range cmds {
 		wg.Add(1)
@@ -43,16 +38,18 @@ func SelectUsers(in, out chan interface{}) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
+	userIDs := &sync.Map{}
+
 	for data := range in {
 		wg.Add(1)
-		go func(data any) {
+		go func(email string) {
 			defer wg.Done()
 
-			user := GetUser(data.(string))
+			user := GetUser(email)
 			if _, exists := userIDs.LoadOrStore(user.ID, true); !exists {
 				out <- user
 			}
-		}(data)
+		}(data.(string))
 	}
 }
 
@@ -86,11 +83,11 @@ func SelectMessages(in, out chan interface{}) {
 }
 
 func CheckSpam(in, out chan interface{}) {
-	type none struct{}
-	limiter := make(chan none, HasSpamMaxAsyncRequests)
-
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
+
+	type none struct{}
+	limiter := make(chan none, HasSpamMaxAsyncRequests)
 
 	for data := range in {
 		limiter <- none{}

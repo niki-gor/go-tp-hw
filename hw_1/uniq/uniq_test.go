@@ -1,4 +1,4 @@
-package main
+package uniq
 
 import (
 	"bytes"
@@ -150,9 +150,9 @@ var allTestCases = append(basicTestCases(), combinedTestCase())
 func TestLogic(t *testing.T) {
 	for i, tc := range allTestCases {
 		us := NewUniqStrategy(tc.C)
-		us.Reader = strings.NewReader(tc.Q)
+		us.Input = strings.NewReader(tc.Q)
 		result := bytes.Buffer{}
-		us.Writer = &result
+		us.Output = &result
 		us.Execute()
 		if result.String() != tc.A {
 			t.Errorf("testcase %d\nquery: %s\nresult:\n%s\nexpected:\n%s", i+1, tc.Q, result.String(), tc.A)

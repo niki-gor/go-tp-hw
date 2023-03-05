@@ -1,11 +1,9 @@
-package main
+package uniq
 
 import (
 	"bufio"
 	"errors"
-	"flag"
 	"fmt"
-	"go_tp/hw_1/common"
 	"io"
 	"os"
 	"strings"
@@ -29,22 +27,6 @@ type Config struct {
 
 	InputPath  string
 	OutputPath string
-}
-
-func (c *Config) ParseFromFlags() {
-	flag.BoolVar(&c.CountEntries, "c", false, "подсчитать количество встречаний строки во входных данных. Вывести это число перед строкой отделив пробелом.")
-	flag.BoolVar(&c.OnlyRepeated, "d", false, "вывести только те строки, которые повторились во входных данных.")
-	flag.BoolVar(&c.OnlyUnique, "u", false, "вывести только те строки, которые не повторились во входных данных.")
-
-	flag.IntVar(&c.IgnoreFields, "f", 0, "не учитывать первые num_fields полей в строке. Полем в строке является непустой набор символов отделённый пробелом.")
-	flag.IntVar(&c.IgnoreChars, "s", 0, "не учитывать первые num_chars символов в строке. При использовании вместе с параметром -f учитываются первые символы после num_fields полей (не учитывая пробел-разделитель после последнего поля).")
-
-	flag.BoolVar(&c.IgnoreCase, "i", false, "не учитывать регистр букв.")
-
-	flag.Parse()
-
-	c.InputPath = flag.Arg(0)
-	c.OutputPath = flag.Arg(1)
 }
 
 func (c *Config) Validate() error {
@@ -78,17 +60,17 @@ func (c *Config) Validate() error {
 }
 
 type UniqStrategy struct {
-	Reader    io.Reader
-	AreEqual  func(string, string) bool
-	CountIsOk func(int) bool
-	Format    func(int, string) string
-	Writer    io.Writer
+	Input             io.Reader
+	AreEqual          func(string, string) bool
+	CountIsAcceptable func(int) bool
+	Format            func(int, string) string
+	Output            io.Writer
 }
 
 func (us *UniqStrategy) Execute() {
 	prev, latest := "", ""
 	count := 0
-	scanner := bufio.NewScanner(us.Reader)
+	scanner := bufio.NewScanner(us.Input)
 
 	if scanner.Scan() {
 		prev = scanner.Text()
@@ -100,34 +82,34 @@ func (us *UniqStrategy) Execute() {
 			count++
 			continue
 		}
-		if us.CountIsOk(count) {
-			fmt.Fprintln(us.Writer, us.Format(count, prev))
+		if us.CountIsAcceptable(count) {
+			fmt.Fprintln(us.Output, us.Format(count, prev))
 		}
 		prev = latest
 		count = 1
 	}
-	if us.CountIsOk(count) {
-		fmt.Fprintln(us.Writer, us.Format(count, prev))
+	if us.CountIsAcceptable(count) {
+		fmt.Fprintln(us.Output, us.Format(count, prev))
 	}
 }
 
-func Min(a, b int) int {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func Drop[T any](arr []T, n int) []T {
-	return arr[Min(len(arr), n):]
+func drop[T any](arr []T, n int) []T {
+	return arr[min(len(arr), n):]
 }
 
-func AreEqual(s1, s2 string, ignoreFields, ignoreChars int) bool {
-	first := Drop(strings.Fields(s1), ignoreFields)
-	second := Drop(strings.Fields(s2), ignoreFields)
+func areEqual(s1, s2 string, ignoreFields, ignoreChars int) bool {
+	first := drop(strings.Fields(s1), ignoreFields)
+	second := drop(strings.Fields(s2), ignoreFields)
 
 	dropRunes := func(words []string) []rune {
-		return Drop([]rune(strings.Join(words, " ")), ignoreChars)
+		return drop([]rune(strings.Join(words, " ")), ignoreChars)
 	}
 	return slices.Equal(dropRunes(first), dropRunes(second))
 }
@@ -136,32 +118,32 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 	us := &UniqStrategy{}
 
 	if c.InputPath != "" {
-		us.Reader, _ = os.Open(c.InputPath)
+		us.Input, _ = os.Open(c.InputPath)
 	} else {
-		us.Reader = os.Stdin
+		us.Input = os.Stdin
 	}
 
 	if c.IgnoreCase {
 		us.AreEqual = func(s1, s2 string) bool {
-			return AreEqual(strings.ToLower(s1), strings.ToLower(s2), c.IgnoreFields, c.IgnoreChars)
+			return areEqual(strings.ToLower(s1), strings.ToLower(s2), c.IgnoreFields, c.IgnoreChars)
 		}
 	} else {
 		us.AreEqual = func(s1, s2 string) bool {
-			return AreEqual(s1, s2, c.IgnoreFields, c.IgnoreChars)
+			return areEqual(s1, s2, c.IgnoreFields, c.IgnoreChars)
 		}
 	}
 
 	switch {
 	case c.OnlyUnique:
-		us.CountIsOk = func(count int) bool {
+		us.CountIsAcceptable = func(count int) bool {
 			return count == 1
 		}
 	case c.OnlyRepeated:
-		us.CountIsOk = func(count int) bool {
+		us.CountIsAcceptable = func(count int) bool {
 			return count > 1
 		}
 	default:
-		us.CountIsOk = func(count int) bool {
+		us.CountIsAcceptable = func(count int) bool {
 			return count > 0
 		}
 	}
@@ -177,20 +159,10 @@ func NewUniqStrategy(c Config) *UniqStrategy {
 	}
 
 	if c.OutputPath != "" {
-		us.Writer, _ = os.Create(c.OutputPath)
+		us.Output, _ = os.Create(c.OutputPath)
 	} else {
-		us.Writer = os.Stdout
+		us.Output = os.Stdout
 	}
 
 	return us
-}
-
-func main() {
-	config := Config{}
-	config.ParseFromFlags()
-	if err := config.Validate(); err != nil {
-		common.Exit1OnError(err)
-	}
-	us := NewUniqStrategy(config)
-	us.Execute()
 }

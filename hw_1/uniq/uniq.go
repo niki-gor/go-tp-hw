@@ -7,8 +7,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -108,10 +106,12 @@ func areEqual(s1, s2 string, ignoreFields, ignoreChars int) bool {
 	first := drop(strings.Fields(s1), ignoreFields)
 	second := drop(strings.Fields(s2), ignoreFields)
 
-	dropRunes := func(words []string) []rune {
-		return drop([]rune(strings.Join(words, " ")), ignoreChars)
+	dropRunes := func(words []string) string {
+		joined := strings.Join(words, " ")
+		dropped := drop([]rune(joined), ignoreChars)
+		return string(dropped)
 	}
-	return slices.Equal(dropRunes(first), dropRunes(second))
+	return strings.Compare(dropRunes(first), dropRunes(second)) == 0
 }
 
 func NewUniqStrategy(c Config) *UniqStrategy {

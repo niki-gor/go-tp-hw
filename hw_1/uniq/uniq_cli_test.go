@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func toCli(c Config) []string {
+func toCli(c Options) []string {
 	result := []string{}
 	if c.CountEntries {
 		result = append(result, "-c")

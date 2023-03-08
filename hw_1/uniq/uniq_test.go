@@ -9,7 +9,7 @@ import (
 type TestCase struct {
 	Q string
 	A string
-	C Config
+	C Options
 }
 
 func basicTestCases() []TestCase {
@@ -22,17 +22,17 @@ I love music of Kartik.
 Thanks.
 I love music of Kartik.
 I love music of Kartik.`
-	countEntriesC := Config{}
+	countEntriesC := Options{}
 	countEntriesC.CountEntries = true
-	onlyRepeatedC := Config{}
+	onlyRepeatedC := Options{}
 	onlyRepeatedC.OnlyRepeated = true
-	onlyUniqueC := Config{}
+	onlyUniqueC := Options{}
 	onlyUniqueC.OnlyUnique = true
-	ignoreCaseC := Config{}
+	ignoreCaseC := Options{}
 	ignoreCaseC.IgnoreCase = true
-	ignoreOneField := Config{}
+	ignoreOneField := Options{}
 	ignoreOneField.IgnoreFields = 1
-	ignoreOneChar := Config{}
+	ignoreOneChar := Options{}
 	ignoreOneChar.IgnoreChars = 1
 	testCases := []TestCase{
 		{
@@ -43,7 +43,7 @@ I love music of Kartik.
 Thanks.
 I love music of Kartik.
 `,
-			C: Config{},
+			C: Options{},
 		},
 		{
 			Q: defaultQ,
@@ -124,7 +124,7 @@ Thanks.
 }
 
 func combinedTestCase() TestCase {
-	c := Config{}
+	c := Options{}
 	c.IgnoreFields = 1 // не учитывается первое поле
 	c.IgnoreChars = 1  // и первый символ 2-го поля
 	tc := TestCase{

@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func ParseFromFlags(c *uniq.Config) {
+func ParseFromFlags(c *uniq.Options) {
 	flag.BoolVar(&c.CountEntries, "c", false, "подсчитать количество встречаний строки во входных данных. Вывести это число перед строкой отделив пробелом.")
 	flag.BoolVar(&c.OnlyRepeated, "d", false, "вывести только те строки, которые повторились во входных данных.")
 	flag.BoolVar(&c.OnlyUnique, "u", false, "вывести только те строки, которые не повторились во входных данных.")
@@ -23,7 +23,7 @@ func ParseFromFlags(c *uniq.Config) {
 }
 
 func main() {
-	config := uniq.Config{}
+	config := uniq.Options{}
 	ParseFromFlags(&config)
 	if err := config.Validate(); err != nil {
 		log.Fatal(err)

@@ -13,7 +13,7 @@ var (
 	ErrIncompatibleFlags = errors.New("флаги -c, -d и -u несовместимы - вы можете выбрать только один из них")
 )
 
-type Config struct {
+type Options struct {
 	CountEntries bool
 	OnlyRepeated bool
 	OnlyUnique   bool
@@ -27,7 +27,7 @@ type Config struct {
 	OutputPath string
 }
 
-func (c *Config) Validate() error {
+func (c *Options) Validate() error {
 	b2i := func(b bool) int {
 		if b {
 			return 1
@@ -114,7 +114,7 @@ func areEqual(s1, s2 string, ignoreFields, ignoreChars int) bool {
 	return strings.Compare(dropRunes(first), dropRunes(second)) == 0
 }
 
-func NewUniqStrategy(c Config) *UniqStrategy {
+func NewUniqStrategy(c Options) *UniqStrategy {
 	us := &UniqStrategy{}
 
 	if c.InputPath != "" {

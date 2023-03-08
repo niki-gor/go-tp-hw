@@ -7,16 +7,18 @@ import (
 	"strings"
 )
 
-var ErrUnexpectedClosingBrace = errors.New("unexpected closing brace")
-var ErrUnclosedBrace = errors.New("unclosed brace")
-var ErrZeroDivision = errors.New("division by zero")
-var ErrMissingOperator = errors.New("missing operator")
+var (
+	ErrUnexpectedClosingBrace = errors.New("unexpected closing brace")
+	ErrUnclosedBrace          = errors.New("unclosed brace")
+	ErrZeroDivision           = errors.New("division by zero")
+	ErrMissingOperator        = errors.New("missing operator")
 
-var spaceBetweenNumber = regexp.MustCompile(`\d\s+\d`)
-var spaces = regexp.MustCompile(`\s+`)
-var plusesMinuses = regexp.MustCompile(`[\+\-]+`)
-var binaryPlusMinus = regexp.MustCompile(`(\d)[+-]`) // после числа идет +-, следовательно бинарный +-
-var multDiv = regexp.MustCompile(`[\*\/]`)
+	spaceBetweenNumber = regexp.MustCompile(`\d\s+\d`)
+	spaces             = regexp.MustCompile(`\s+`)
+	plusesMinuses      = regexp.MustCompile(`[\+\-]+`)
+	binaryPlusMinus    = regexp.MustCompile(`(\d)[+-]`) // после числа идет +-, следовательно бинарный +-
+	multDiv            = regexp.MustCompile(`[\*\/]`)
+)
 
 func reducePlusesMinuses(s string) string {
 	if strings.Count(s, "-")%2 == 0 {

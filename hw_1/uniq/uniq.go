@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"go_tp/hw_1/utils"
 	"io"
 	"os"
 	"strings"
@@ -28,13 +29,7 @@ type Options struct {
 }
 
 func (c *Options) Validate() error {
-	b2i := func(b bool) int {
-		if b {
-			return 1
-		}
-		return 0
-	}
-	if b2i(c.CountEntries)+b2i(c.OnlyRepeated)+b2i(c.OnlyUnique) > 1 {
+	if utils.B2I(c.CountEntries)+utils.B2I(c.OnlyRepeated)+utils.B2I(c.OnlyUnique) > 1 {
 		return ErrIncompatibleFlags
 	}
 

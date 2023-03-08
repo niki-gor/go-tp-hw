@@ -9,8 +9,8 @@ import (
 
 var ErrUnexpectedClosingBrace = errors.New("unexpected closing brace")
 var ErrUnclosedBrace = errors.New("unclosed brace")
-var ErrInvalidExpression = errors.New("invalid expression")
 var ErrZeroDivision = errors.New("division by zero")
+var ErrMissingOperator = errors.New("missing operator")
 
 var spaceBetweenNumber = regexp.MustCompile(`\d\s+\d`)
 var spaces = regexp.MustCompile(`\s+`)
@@ -51,6 +51,7 @@ func calcMonomial(s string) (result int, err error) {
 	return
 }
 
+// вычисляет значение выражения без скобок
 func PlainCalc(s string) (string, error) {
 	s = plusesMinuses.ReplaceAllStringFunc(s, reducePlusesMinuses) // сокращение записей +---+--х до -х и т.п.
 	operators := binaryPlusMinus.FindAllString(s, -1)
@@ -103,12 +104,12 @@ func calc(s string) (result string, length int, err error) {
 
 func Calc(s string) (string, error) {
 	if spaceBetweenNumber.MatchString(s) { // литералы вида "100 500", "19 84" не допускаются
-		return "", ErrInvalidExpression
+		return "", ErrMissingOperator // считается, что между ними должен стоть оператор
 	}
 	s = spaces.ReplaceAllString(s, "")
 	s += ")" // требуется для удобного парсинга
 	result, length, err := calc(s)
-	if err != nil {
+	if err != nil { // вычисляет значение без скобок
 		return "", err
 	}
 	if length != len(s) { // проверка, что последняя сбалансированная закрывающая скобка находится в конце строки

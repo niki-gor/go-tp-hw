@@ -1,6 +1,7 @@
 package calc
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,8 +84,14 @@ func TestZeroDivision(t *testing.T) {
 
 func TestInvalid(t *testing.T) {
 	assert := assert.New(t)
-	for _, tc := range []string{"", "trololo", "1+2)", "cos(0)"} {
+	for _, tc := range []string{"", "trololo", "cos(0)"} {
 		_, err := Calc(tc)
-		assert.NotNil(err)
+		assert.ErrorIs(err, strconv.ErrSyntax)
 	}
+	_, err := Calc("1+2)")
+	assert.ErrorIs(err, ErrUnexpectedClosingBrace)
+	_, err = Calc("(1 + 2")
+	assert.ErrorIs(err, ErrUnclosedBrace)
+	_, err = Calc("1  1")
+	assert.ErrorIs(err, ErrMissingOperator)
 }

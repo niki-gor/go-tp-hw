@@ -57,7 +57,7 @@ func calcMonomial(s string) (result int, err error) {
 func PlainCalc(s string) (string, error) {
 	s = plusesMinuses.ReplaceAllStringFunc(s, reducePlusesMinuses) // сокращение записей +---+--х до -х и т.п.
 	operators := binaryPlusMinus.FindAllString(s, -1)
-	s = binaryPlusMinus.ReplaceAllString(s, "$1 ")
+	s = binaryPlusMinus.ReplaceAllString(s, "$1 ") // заменить [7+]4 на [7 ]4, затем сплитнуть по пробелу
 	monomials := strings.Split(s, " ")
 	result, err := calcMonomial(monomials[0])
 	if err != nil {
@@ -68,7 +68,7 @@ func PlainCalc(s string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if operators[i][1] == '+' {
+		if operators[i][1] == '+' { // непосредственно символ бинарного +- идет вторым в регексе binaryPlusMinus
 			result += monomial
 		} else {
 			result -= monomial

@@ -2,6 +2,8 @@ package calc
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type TestCase struct {
@@ -10,6 +12,7 @@ type TestCase struct {
 }
 
 func TestBasic(t *testing.T) {
+	assert := assert.New(t)
 	testCases := []TestCase{
 		{
 			Q: "(1+2)-3",
@@ -22,16 +25,13 @@ func TestBasic(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		result, err := Calc(tc.Q)
-		if err != nil {
-			t.Fatal("error where it should not be")
-		}
-		if result != tc.A {
-			t.Error("not eq")
-		}
+		assert.Nil(err)
+		assert.Equal(result, tc.A)
 	}
 }
 
 func TestOperatorsAndBraces(t *testing.T) {
+	assert := assert.New(t)
 	testCases := []TestCase{
 		{
 			Q: "1+2",
@@ -68,31 +68,23 @@ func TestOperatorsAndBraces(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		result, err := Calc(tc.Q)
-		if err != nil {
-			t.Fatal("error where it should not be")
-		}
-		if result != tc.A {
-			t.Error("not eq")
-		}
+		assert.Nil(err)
+		assert.Equal(result, tc.A)
 	}
 }
 
 func TestZeroDivision(t *testing.T) {
+	assert := assert.New(t)
 	_, err := Calc("22341 / 0")
-	if err == nil {
-		t.Fatal("no error when zero division occurred")
-	}
+	assert.ErrorIs(err, ErrZeroDivision)
 	_, err = Calc("22341 / (1 - 1)")
-	if err == nil {
-		t.Fatal("no error when zero division occurred")
-	}
+	assert.ErrorIs(err, ErrZeroDivision)
 }
 
 func TestInvalid(t *testing.T) {
+	assert := assert.New(t)
 	for _, tc := range []string{"", "trololo", "1+2)", "cos(0)"} {
 		_, err := Calc(tc)
-		if err == nil {
-			t.Fatal("no error when it should be")
-		}
+		assert.NotNil(err)
 	}
 }

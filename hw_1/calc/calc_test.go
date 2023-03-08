@@ -96,35 +96,3 @@ func TestInvalid(t *testing.T) {
 		}
 	}
 }
-
-// func TestBig(t *testing.T) {
-// 	result, err := Calc("1_000_000_000_000_000_000 * 1_000_000_000_000_000_000")
-// 	if err != nil {
-// 		t.Fatal("error where it should not be")
-// 	}
-// 	if result != "1000000000000000000000000000000000000" { // 36 zeroes
-// 		t.Error("not eq")
-// 	}
-// }
-
-// func TestFloat(t *testing.T) {
-// 	testCases := []TestCase{
-// 		{
-// 			Q: "1/2.0",
-// 			A: "0.5",
-// 		},
-// 		{
-// 			Q: "1e-10",
-// 			A: "1e-10",
-// 		},
-// 	}
-// 	for _, tc := range testCases {
-// 		result, err := Calc(tc.Q)
-// 		if err != nil {
-// 			t.Fatal("error where it should not be")
-// 		}
-// 		if result != tc.A {
-// 			t.Error("not eq")
-// 		}
-// 	}
-// }

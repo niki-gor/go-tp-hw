@@ -56,7 +56,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, err := calc.Eval(s)
+	result, err := calc.Calc(s)
 	if err != nil {
 		log.Fatal(err)
 	}

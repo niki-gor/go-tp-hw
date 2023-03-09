@@ -4,9 +4,12 @@ import (
 	"io"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFiles(t *testing.T) {
+	assert := assert.New(t)
 	for _, tc := range allTestCases {
 		input, _ := os.CreateTemp("", "*")
 		output, _ := os.CreateTemp("", "*")
@@ -26,8 +29,6 @@ func TestFiles(t *testing.T) {
 			t.Fatal()
 		}
 
-		if string(result) != tc.A {
-			t.Errorf("result: %s\nexpected: %s\n", string(result), tc.A)
-		}
+		assert.Equal(string(result), tc.A)
 	}
 }

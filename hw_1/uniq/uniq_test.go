@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type TestCase struct {
@@ -148,14 +150,13 @@ Thanks.
 var allTestCases = append(basicTestCases(), combinedTestCase())
 
 func TestLogic(t *testing.T) {
-	for i, tc := range allTestCases {
+	assert := assert.New(t)
+	for _, tc := range allTestCases {
 		us := NewUniqStrategy(tc.C)
 		us.Input = strings.NewReader(tc.Q)
 		result := bytes.Buffer{}
 		us.Output = &result
 		us.Execute()
-		if result.String() != tc.A {
-			t.Errorf("testcase %d\nquery: %s\nresult:\n%s\nexpected:\n%s", i+1, tc.Q, result.String(), tc.A)
-		}
+		assert.Equal(result.String(), tc.A)
 	}
 }

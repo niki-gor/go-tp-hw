@@ -76,22 +76,44 @@ func TestOperatorsAndBraces(t *testing.T) {
 
 func TestZeroDivision(t *testing.T) {
 	assert := assert.New(t)
-	_, err := Calc("22341 / 0")
-	assert.ErrorIs(err, ErrZeroDivision)
-	_, err = Calc("22341 / (1 - 1)")
-	assert.ErrorIs(err, ErrZeroDivision)
+	for _, tc := range []string{"22341 / 0", "22341 / (1 - 1)"} {
+		_, err := Calc(tc)
+		assert.ErrorIs(err, ErrZeroDivision)
+	}
 }
 
 func TestInvalid(t *testing.T) {
 	assert := assert.New(t)
-	for _, tc := range []string{"", "trololo", "cos(0)"} {
-		_, err := Calc(tc)
-		assert.ErrorIs(err, strconv.ErrSyntax)
+	for _, tc := range []struct {
+		Q string
+		E error
+	}{
+		{
+			Q: "",
+			E: strconv.ErrSyntax,
+		},
+		{
+			Q: "trololo",
+			E: strconv.ErrSyntax,
+		},
+		{
+			Q: "cos(0)",
+			E: strconv.ErrSyntax,
+		},
+		{
+			Q: "1+2)",
+			E: ErrUnexpectedClosingBrace,
+		},
+		{
+			Q: "(1 + 2",
+			E: ErrUnclosedBrace,
+		},
+		{
+			Q: "1  1",
+			E: ErrMissingOperator,
+		},
+	} {
+		_, err := Calc(tc.Q)
+		assert.ErrorIs(err, tc.E)
 	}
-	_, err := Calc("1+2)")
-	assert.ErrorIs(err, ErrUnexpectedClosingBrace)
-	_, err = Calc("(1 + 2")
-	assert.ErrorIs(err, ErrUnclosedBrace)
-	_, err = Calc("1  1")
-	assert.ErrorIs(err, ErrMissingOperator)
 }

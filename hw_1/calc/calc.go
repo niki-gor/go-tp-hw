@@ -83,7 +83,8 @@ func calc(s string) (result string, length int, err error) {
 	for i < len(s) {
 		c := s[i]
 		i += 1
-		if c == '(' {
+		switch c {
+		case '(':
 			var inner string
 			var addLength int
 			inner, addLength, err = calc(s[i:])
@@ -92,11 +93,11 @@ func calc(s string) (result string, length int, err error) {
 			}
 			i += addLength
 			plain += inner
-		} else if c == ')' {
+		case ')':
 			result, err = PlainCalc(plain)
 			length = i
 			return
-		} else {
+		default:
 			plain += string(c)
 		}
 	}

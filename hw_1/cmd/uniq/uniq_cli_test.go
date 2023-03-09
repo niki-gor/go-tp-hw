@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type TestCase struct {
@@ -175,6 +177,7 @@ func toCli(c uniq.Options) []string {
 }
 
 func TestCli(t *testing.T) {
+	assert := assert.New(t)
 	for _, tc := range allTestCases {
 		// тест *работает* на *nix с установленным компилятором go
 		echo := exec.Command("echo", tc.Q)
@@ -188,8 +191,6 @@ func TestCli(t *testing.T) {
 		echo.Run()   // nolint
 		uniq.Wait()  // nolint
 
-		if result.String() != tc.A {
-			t.Errorf("result: %s\nexpected: %s\n", result.String(), tc.A)
-		}
+		assert.Equal(result.String(), tc.A)
 	}
 }

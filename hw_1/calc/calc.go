@@ -16,8 +16,12 @@ var (
 	spaceBetweenNumber = regexp.MustCompile(`\d\s+\d`)
 	spaces             = regexp.MustCompile(`\s+`)
 	plusesMinuses      = regexp.MustCompile(`[\+\-]+`)
-	binaryPlusMinus    = regexp.MustCompile(`(\d)[+-]`) // после числа идет +-, следовательно бинарный +-
 	multDiv            = regexp.MustCompile(`[\*\/]`)
+	binaryPlusMinus    = regexp.MustCompile(`(\d)[+-]`) // после числа идет +-, следовательно бинарный +-
+)
+
+const (
+	binaryPlusMinusOperatorIndex = 1
 )
 
 func reducePlusesMinuses(s string) string {
@@ -56,7 +60,13 @@ func calcMonomial(s string) (result int, err error) {
 // вычисляет значение выражения без скобок
 func PlainCalc(s string) (string, error) {
 	s = plusesMinuses.ReplaceAllStringFunc(s, reducePlusesMinuses) // сокращение записей +---+--х до -х и т.п.
-	operators := binaryPlusMinus.FindAllString(s, -1)
+
+	unfilteredOperators := binaryPlusMinus.FindAllString(s, -1)
+	operators := make([]byte, len(unfilteredOperators))
+	for i := range unfilteredOperators {
+		operators[i] = unfilteredOperators[i][binaryPlusMinusOperatorIndex]
+	}
+
 	s = binaryPlusMinus.ReplaceAllString(s, "$1 ") // заменить [7+]4 на [7 ]4, затем сплитнуть по пробелу
 	monomials := strings.Split(s, " ")
 	result, err := calcMonomial(monomials[0])
@@ -68,7 +78,7 @@ func PlainCalc(s string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if operators[i][1] == '+' { // непосредственно символ бинарного +- идет вторым в регексе binaryPlusMinus
+		if operators[i] == '+' {
 			result += monomial
 		} else {
 			result -= monomial

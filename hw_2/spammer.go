@@ -7,13 +7,6 @@ import (
 	"sync"
 )
 
-func onErrorExit1(err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
 func RunPipeline(cmds ...cmd) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
@@ -61,7 +54,10 @@ func SelectMessages(in, out chan interface{}) {
 		defer wg.Done()
 
 		results, err := GetMessages(batch...)
-		onErrorExit1(err)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 		for _, result := range results {
 			out <- result
 		}
@@ -97,7 +93,10 @@ func CheckSpam(in, out chan interface{}) {
 			defer wg.Done()
 
 			hasSpam, err := HasSpam(msgID)
-			onErrorExit1(err)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 			<-limiter
 
 			out <- MsgData{
